@@ -1,0 +1,85 @@
+9.28.
+anno_seqon.c ---> { "intronic_splice_region_variant",               "SpliceSite", }
+anno_seqon.c ---> SpliceSites ==> SpliceSite
+anno_seqon.c --> anno_seqon.c 注释到 508 - 539 行，处理cigar，不需要考虑
+ 
+9.29.
+ gea.c ---> 1537-1588 lines: 处理cigar，不需要考虑
+
+##10.06.
+anno_seqon.c --> 1483 line:  -1  for protein length
+anno_seqon.c --> 46 line:  { "3_prime_UTR_intron_variant",    "UTR3", }, ---> UTR3 => Intron
+                        47 line   { "5_prime_UTR_intron_variant",    "UTR5", }, ---> UTR5 => Intron
+anno_seqon.c --> 1728 line: if (trans->type.con1 == mc_noncoding_intron || trans->type.con1 == mc_coding_intron || trans->type.con1 == mc_utr3_intron || trans->type.con1 == mc_utr5_intron ) trans->type.count = v->blockCount-trans->type.count-1;
+
+
+##10.07.
+anno_seqon.c --> 90 line change:      .donor_region = 3, --->  .donor_region = 8,
+anno_seqon.c --> 1312 line add:   else if( inf->offset >-splice_site_options.acceptor_region ) type->con1 = mc_intron_splice_sites;
+anno_seqon.c --> 1318 line add:   else if( inf->offset < splice_site_options.donor_region ) type->con1 = mc_intron_splice_sites;
+anno_seqon.c --> 1357 line add:   else if ( *offset < 0 && *offset >-splice_site_options.acceptor_region ) *con_splice = mc_intron_splice_sites;
+anno_seqon.c --> 1359 line add:   else if ( *offset >0 && *offset < splice_site_options.donor_region ) *con_splice = mc_intron_splice_sites;
+anno_seqon.c --> 1374 line add:   else if ( *offset < 0 && *offset >-splice_site_options.acceptor_region ) *con_splice = mc_intron_splice_sites;
+anno_seqon.c --> 1376 line add:   else if ( *offset >0 && *offset < splice_site_options.donor_region ) *con_splice = mc_intron_splice_sites;
+anno_seqon.c --> 1390 line add:  else if ( *offset < 0 && *offset >-splice_site_options.acceptor_region ) *con_splice = mc_intron_splice_sites;
+anno_seqon.c --> 1392 line add:  else if ( *offset >0 && *offset < splice_site_options.donor_region ) *con_splice = mc_intron_splice_sites;
+anno_seqon.c --> 1406 line add:  else if ( *offset < 0 && *offset >-splice_site_options.acceptor_region ) *con_splice = mc_intron_splice_sites;
+anno_seqon.c --> 1408 line add:  else if ( *offset >0 && *offset < splice_site_options.donor_region ) *con_splice = mc_intron_splice_sites;
+anno_seqon.c --> 2260 line add:   case mc_intron_splice_sites:
+
+## 10.14.
+anno_seqon.c --> 42 line: ExonLoss --> ExonLost
+anno_seqon.c --> 69 line: StartLoss --> StartLost
+anno_seqon.c --> 71 line: StopLoss --> StopLost
+
+## 10.17. 
+anno_seqon.c --> 89 line: .acceptor_region = 8 --->  .acceptor_region = 9,
+anno_seqon.c --> 90 line: .donor_region = 8 --->  .donor_region = 9,
+anno_seqon.c --> 2005 line: ksprintf(str, "del"); -> ksprintf(str, "del%s",ref);
+anno_seqon.c 2096 line: ksprintf(str, "(p.%d_%ddelins", type->loc_amino, type->loc_end_amino); ->  ksprintf(str, "(p.%s%d_%s%ddelins", codon_names[type->ori_amino],type->loc_amino,codon_names[type->ori_end_amino], type->loc_end_amino);
+anno_seqon.c 2098 line: ksprintf(str, "/p.%s%d_%s%ddelins", type->loc_amino, type->loc_end_amino); ->  ksprintf(str, "/p.%s%d_%s%ddelins",codon_names[type->ori_amino], type->loc_amino, codon_names[type->ori_end_amino], type->loc_end_amino);
+
+## 10.24. 
+anno_seqon.c --> 2073 line: ksprintf(str, "(p.%d_%dins", type->loc_amino, type->loc_end_amino); --> ksprintf(str, "(p.%s%d_%s%dins", codon_names[type->ori_amino], type->loc_amino, codon_names[type->ori_amino], type->loc_end_amino);
+anno_seqon.c --> 2077 line:  ksprintf(str, "p.%s%d_%s%dins", codon_names[type->ori_amino], type->loc_amino,codon_names[type->ori_amino], type->loc_amino);
+anno_seqon.c --> 2096 line: ksprintf(str, "p.%s%d_%dins", type->loc_amino, type->loc_end_amino); --> ksprintf(str, "(p.%s%d_%s%ddelins", codon_names[type->ori_amino],type->loc_amino,codon_names[type->ori_amino], type->loc_end_amino);
+anno_seqon.c --> 2098 line: ksprintf(str, "/p.%s%d_%s%ddelins",codon_names[type->ori_amino], type->loc_amino, codon_names[type->ori_end_amino], type->loc_end_amino);
+
+## 10.25.
+1279 line add: 
+        if (mc->type == var_type_ins){
+           if (inf->strand == '-' ) ksprintf(str, "%s:c.-%d", inf->transcript, inf->loc+strlen(mc->alt));
+           else{
+               if (inf->loc == 1 ) ksprintf(str, "%s:c.%d", inf->transcript, inf->loc);
+               else ksprintf(str, "%s:c.-%d", inf->transcript, (inf->loc-1));
+           }
+       }else ksprintf(str, "%s:c.-%d", inf->transcript, inf->loc);
+
+2203 line add:
+        if (mc->type == var_type_ins){
+            if (inf->strand == '-' ) {
+                if( inf->loc==1) ksprintf(str, "%d", inf->end_loc-2);
+                else ksprintf(str, "%d", inf->end_loc+1);
+            }else ksprintf(str, "%d", inf->end_loc+strlen(mc->alt));
+         }else ksprintf(str, "%d", inf->end_loc);
+
+2225 line add:         if (mc->type == var_type_ins ) kputs("ins%s",str,mc->alt);
+
+2169 line add: if (mc->type == var_type_ins){
+            if (inf->strand == '-' ) ksprintf(str, "%s:n.%d", inf->transcript, inf->loc+strlen(mc->alt));
+            else ksprintf(str, "%s:n.%d", inf->transcript, (inf->loc+1));
+        }else 
+2177 line add: if (mc->type == var_type_ins){
+            if (inf->strand == '-' ) ksprintf(str, "%s:c.%d", inf->transcript, inf->loc+strlen(mc->alt));
+            else ksprintf(str, "%s:c.%d", inf->transcript, (inf->loc+1));
+        }else
+2196 line add: if (mc->type == var_type_ins){
+            if (inf->strand == '-' ) ksprintf(str, "%s:c.*%d", inf->transcript, inf->loc+strlen(mc->alt));
+            else{
+                if (inf->loc == 1 ) ksprintf(str, "%s:c.*%d", inf->transcript, inf->loc);
+                else ksprintf(str, "%s:c.*%d", inf->transcript, (inf->loc+1));
+            }
+        }else
+
+1481 line add:         else if ( con1 !=mc_unknown && type->con2 == mc_unknown ) type->con2 = con1;
+
